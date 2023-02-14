@@ -2,9 +2,10 @@
 DevHoldableEngine is a physics based holdable system for Gorilla Tag.
 
 ## Item Logic
-Grabbing and releasing items is super easy. <br />
-Go to the item you want to pick up, put one of your hands over that item, and then hold down grip. When doing so you will hold the item, but when you release grip, it will also release the item you're holding. <br />
-The item acts like an ingame item too, for instance if you have a custom item in your right hand, you're not able to pick up any others with that hand until you release that custom item. <br />
+Grabbing and releasing items is **very easy**. <br />
+
+- Go to the item you want to pick up, put one of your hands over that item, and then hold down grip. When doing so you will hold the item, but when you release grip, it will also release the item you're holding. <br />
+- The item acts like an ingame item too, for instance if you have a custom item in your right hand, you're not able to pick up any others with that hand until you release that custom item. <br />
 
 ## Item Customization
 You can customize a ton of information relating to custom items, grab distance, throw force, etc. <br />

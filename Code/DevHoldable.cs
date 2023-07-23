@@ -29,7 +29,7 @@ namespace DevHoldableEngine
         {
             if (Rigidbody != null)
             {
-                GorillaVelocityEstimator gorillaVelocityEstimator = (isLeft ? Player.Instance.leftHandTransform.GetComponentInChildren<GorillaVelocityEstimator>() : Player.Instance.rightHandTransform.GetComponentInChildren<GorillaVelocityEstimator>()) ?? null;
+                GorillaVelocityEstimator gorillaVelocityEstimator = (isLeft ? Player.Instance.leftControllerTransform.GetComponentInChildren<GorillaVelocityEstimator>() : Player.Instance.rightControllerTransform.GetComponentInChildren<GorillaVelocityEstimator>()) ?? null;
 
                 if (gorillaVelocityEstimator != null)
                 {
@@ -49,7 +49,7 @@ namespace DevHoldableEngine
             bool leftGrip = left >= 0.65f;
             bool rightGrip = right >= 0.65f;
 
-            if (PickUp && leftGrip && Vector3.Distance(Player.Instance.leftHandTransform.position, transform.position) < Distance && !InHand && EquipmentInteractor.instance.leftHandHeldEquipment == null)
+            if (PickUp && leftGrip && Vector3.Distance(Player.Instance.leftControllerTransform.position, transform.position) < Distance && !InHand && EquipmentInteractor.instance.leftHandHeldEquipment == null)
             {
                 // Hold logic
                 InLeftHand = true;
@@ -78,7 +78,7 @@ namespace DevHoldableEngine
                 OnDrop(true);
             }
 
-            if (PickUp && rightGrip && Vector3.Distance(Player.Instance.rightHandTransform.position, transform.position) < Distance && !InHand && EquipmentInteractor.instance.rightHandHeldEquipment == null)
+            if (PickUp && rightGrip && Vector3.Distance(Player.Instance.rightControllerTransform.position, transform.position) < Distance && !InHand && EquipmentInteractor.instance.rightHandHeldEquipment == null)
             {
                 // Hold logic
                 InLeftHand = false;

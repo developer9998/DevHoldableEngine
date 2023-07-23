@@ -1,109 +1,94 @@
-﻿using UnityEngine;
+﻿using GorillaLocomotion;
+using UnityEngine;
 using UnityEngine.XR;
-using GorillaLocomotion;
-using System.Linq;
-using Steamworks;
 
 namespace DevHoldableEngine
 {
     public class DevHoldable : HoldableObject
     {
-        public bool InHand;
-        public bool InLeftHand;
-        public bool PickUp;
-        public Rigidbody Rigidbody;
+        public bool
+            InHand = false,
+            InLeftHand = false,
+            PickUp = true,
+            DidSwap = false,
+            SwappedLeft = true;
 
-        public float Distance = 0.2f;
-        public float ThrowForce = 1.75f;
+        public float
+            GrabDistance = 0.15f,
+            ThrowForce = 1.75f;
 
         public virtual void OnGrab(bool isLeft)
         {
-            if (Rigidbody != null)
-            {
-                Rigidbody.isKinematic = true;
-                Rigidbody.useGravity = false;
-            }
+
         }
 
         public virtual void OnDrop(bool isLeft)
         {
-            if (Rigidbody != null)
-            {
-                GorillaVelocityEstimator gorillaVelocityEstimator = (isLeft ? Player.Instance.leftControllerTransform.GetComponentInChildren<GorillaVelocityEstimator>() : Player.Instance.rightControllerTransform.GetComponentInChildren<GorillaVelocityEstimator>()) ?? null;
 
-                if (gorillaVelocityEstimator != null)
-                {
-                    Rigidbody.isKinematic = false;
-                    Rigidbody.useGravity = true;
-                    Rigidbody.velocity = (gorillaVelocityEstimator.linearVelocity * ThrowForce) + Player.Instance.GetComponent<Rigidbody>().velocity;
-                    Rigidbody.angularVelocity = gorillaVelocityEstimator.angularVelocity;
-                }
-            }
         }
 
         public void Update()
         {
             InputDevices.GetDeviceAtXRNode(XRNode.LeftHand).TryGetFeatureValue(CommonUsages.grip, out float left);
+            bool leftGrip = left >= 0.5f;
+
             InputDevices.GetDeviceAtXRNode(XRNode.RightHand).TryGetFeatureValue(CommonUsages.grip, out float right);
+            bool rightGrip = right >= 0.5f;
 
-            bool leftGrip = left >= 0.65f;
-            bool rightGrip = right >= 0.65f;
+            var Distance = GrabDistance * Player.Instance.scale;
+            if (DidSwap && (!SwappedLeft ? !leftGrip : !rightGrip))
+                DidSwap = false;
 
-            if (PickUp && leftGrip && Vector3.Distance(Player.Instance.leftControllerTransform.position, transform.position) < Distance && !InHand && EquipmentInteractor.instance.leftHandHeldEquipment == null)
+            bool pickLeft = PickUp && leftGrip && Vector3.Distance(Player.Instance.leftControllerTransform.position, transform.position) < Distance && !InHand && EquipmentInteractor.instance.leftHandHeldEquipment == null && !DidSwap;
+            bool swapLeft = InHand && leftGrip && rightGrip && !DidSwap && (Vector3.Distance(Player.Instance.leftControllerTransform.position, transform.position) < Distance) && !SwappedLeft && EquipmentInteractor.instance.leftHandHeldEquipment == null;
+            if (pickLeft || swapLeft)
             {
-                // Hold logic
+                DidSwap = swapLeft;
+                SwappedLeft = true;
                 InLeftHand = true;
                 InHand = true;
+
                 transform.SetParent(GorillaTagger.Instance.offlineVRRig.leftHandTransform.parent);
-
-                // Other logic
-                GorillaTagger.Instance.StartVibration(true, 0.1f, 0.05f);
+                GorillaTagger.Instance.StartVibration(true, Constants.GrabStrength, Constants.GrabDuration);
                 EquipmentInteractor.instance.leftHandHeldEquipment = this;
+                if (DidSwap) EquipmentInteractor.instance.rightHandHeldEquipment = null;
 
-                // Callback
                 OnGrab(true);
             }
             else if (!leftGrip && InHand && InLeftHand)
             {
-                // Drop logic
                 InLeftHand = true;
                 InHand = false;
                 transform.SetParent(null);
 
-                // Other logic
-                GorillaTagger.Instance.StartVibration(true, 0.1f, 0.05f);
                 EquipmentInteractor.instance.leftHandHeldEquipment = null;
-
-                // Callback
                 OnDrop(true);
             }
 
-            if (PickUp && rightGrip && Vector3.Distance(Player.Instance.rightControllerTransform.position, transform.position) < Distance && !InHand && EquipmentInteractor.instance.rightHandHeldEquipment == null)
+            bool pickRight = PickUp && rightGrip && Vector3.Distance(Player.Instance.rightControllerTransform.position, transform.position) < Distance && !InHand && EquipmentInteractor.instance.rightHandHeldEquipment == null && !DidSwap;
+            bool swapRight = InHand && leftGrip && rightGrip && !DidSwap && (Vector3.Distance(Player.Instance.rightControllerTransform.position, transform.position) < Distance) && SwappedLeft && EquipmentInteractor.instance.rightHandHeldEquipment == null;
+            if (pickRight || swapRight)
             {
-                // Hold logic
+                DidSwap = swapRight;
+                SwappedLeft = false;
+
                 InLeftHand = false;
                 InHand = true;
                 transform.SetParent(GorillaTagger.Instance.offlineVRRig.rightHandTransform.parent);
 
-                // Other logic
-                GorillaTagger.Instance.StartVibration(false, 0.1f, 0.05f);
+                GorillaTagger.Instance.StartVibration(false, Constants.GrabStrength, Constants.GrabDuration);
                 EquipmentInteractor.instance.rightHandHeldEquipment = this;
+                if (DidSwap) EquipmentInteractor.instance.leftHandHeldEquipment = null;
 
-                // Callback
                 OnGrab(false);
             }
             else if (!rightGrip && InHand && !InLeftHand)
             {
-                // Drop logic
                 InLeftHand = false;
                 InHand = false;
                 transform.SetParent(null);
 
-                // Other logic
-                GorillaTagger.Instance.StartVibration(false, 0.1f, 0.05f);
                 EquipmentInteractor.instance.rightHandHeldEquipment = null;
-
-                // Callback
                 OnDrop(false);
             }
         }

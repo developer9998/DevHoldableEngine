@@ -49,7 +49,7 @@ namespace DevHoldableEngine
                 InHand = true;
 
                 transform.SetParent(GorillaTagger.Instance.offlineVRRig.leftHandTransform.parent);
-                GorillaTagger.Instance.StartVibration(true, Constants.GrabStrength, Constants.GrabDuration);
+                GorillaTagger.Instance.StartVibration(true, 0.1f, 0.05f);
                 EquipmentInteractor.instance.leftHandHeldEquipment = this;
                 if (DidSwap) EquipmentInteractor.instance.rightHandHeldEquipment = null;
 
@@ -76,7 +76,7 @@ namespace DevHoldableEngine
                 InHand = true;
                 transform.SetParent(GorillaTagger.Instance.offlineVRRig.rightHandTransform.parent);
 
-                GorillaTagger.Instance.StartVibration(false, Constants.GrabStrength, Constants.GrabDuration);
+                GorillaTagger.Instance.StartVibration(false, 0.1f, 0.05f);
                 EquipmentInteractor.instance.rightHandHeldEquipment = this;
                 if (DidSwap) EquipmentInteractor.instance.leftHandHeldEquipment = null;
 
